@@ -1,11 +1,10 @@
-def getPOSTdata(client_message):
-    print(client_message)
+# Helper function to extract key,value pairs of POST data 
+
+def parsePOSTdata(data):
     data_dict = {}
-    data = str(client_message)   # convert from bytes, same as client_message.decode('utf-8')
-    data = data[data.find('\\r\\n\\r\\n')+8 : -1]
-    print(data)
+    idx = data.find('\r\n\r\n')+4
+    data = data[idx:]
     data_pairs = data.split('&')
-    print(data_pairs)
     for pair in data_pairs:
         key_val = pair.split('=')
         if len(key_val) == 2:
