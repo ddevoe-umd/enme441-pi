@@ -6,7 +6,6 @@
 import RPi.GPIO as gpio
 import threading
 from time import sleep
-from shifter import Shifter
 import socket
 
 from shifter import Shifter    # Use our custom Shifter class
@@ -38,7 +37,7 @@ def web_page(led_byte):
     <p><strong>""" + bin(int(led_byte))[2:] + """</strong> (base 2)</p>
     <form action="/" method="POST">
       <p><input type="text" name="led_byte"> 
-      <p><button type="submit" class="button" name="submit" value="submit">Display Byte</button></p>
+      <p><button type="submit" class="button" name="submit" value="">Display Byte</button></p>
     </form>
     </body>
     </html>
@@ -64,7 +63,7 @@ def serve_web_page():
             print('Waiting for connection...')
             conn, (client_ip, client_port) = s.accept()     # blocking call
             print(f'Connection from {client_ip} on client port {client_port}')
-            client_message = conn.recv(65536).decode('utf-8')
+            client_message = conn.recv(2048).decode('utf-8')
             print(f'Message from client:\n{client_message}')
             data_dict = parsePOSTdata(client_message)
             if 'led_byte' in data_dict.keys():   # make sure data was posted
@@ -96,8 +95,6 @@ try:
     while True:
         pass
 except:
-    print('Terminating webpageTread')
-    webpageTread.terminate()
     print('Joining webpageTread')
     webpageTread.join()
     print('Closing socket')
