@@ -24,4 +24,6 @@ sudo nmcli connection add type wifi ifname wlan0 \
     wifi-sec.key-mgmt wpa-psk wifi-sec.psk "$WIFI_PASSWORD" \
     connection.autoconnect yes
 
+nmcli connection show
+
 echo "Done. The profile will connect automatically when in range."
