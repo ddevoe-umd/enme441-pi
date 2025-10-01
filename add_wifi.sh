@@ -1,6 +1,9 @@
 #!/bin/bash
 # Usage: ./add_wifi.sh "SSID_NAME" "WIFI_PASSWORD"
 
+# Note that execution permissions must be set for this file:
+# chmod +x add_wifi.sh
+
 # On the latest Raspberry Pi OS (Bookworm, 2023+), network management 
 # is handled by NetworkManager (instead of dhcpcd used in older releases).
 
