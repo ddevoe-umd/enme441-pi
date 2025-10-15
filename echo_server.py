@@ -22,28 +22,30 @@ def server():
     while True:
         print(f'Connection request from {addr}')
         data = conn.recv(1024)
-        data_upper = str(data).upper()
-        data = bytes(f'Server received: {data_upper}', 'utf-8')
-        conn.sendall(data)
+        data = data.decode('utf-8')   # decode received byte data
+        data_upper = data.upper()     # convert to upper case
+        # encode data for server response to the client:
+        data = bytes(f'Server received: {data_upper}', encoding='utf-8')
+        conn.sendall(data)    # send encoded response to client
 
 # Start the server in a new thread:
 print('Starting server\n')
 t = threading.Thread(target=server)
 t.start()
 
-time.sleep(0.5)  # wait a moment to make sure the server is ready
+time.sleep(1)  # wait to make sure the server is ready
 
 # Start the client and talk to the server:
 print('Client attempting to create socket')
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 print('Client attempting to connect to port')
 client.connect((HOST, PORT))
-send_data = b'Hello server, this is the client calling'
+send_data = b'Hello server, this is the client calling' # encode as byte (utf-8)
 while True:
     print(f'Sending data: {send_data}')
     client.sendall(send_data)
     recv_data = client.recv(1024)
-    print(f'Client received response: {str(recv_data)}')
-    time.sleep(2)
+    print(f'Client received response: {recv_data.decode('utf-8')}')
+    time.sleep(3)
 
 
