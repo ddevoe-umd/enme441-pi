@@ -1,6 +1,6 @@
 # Web interface for GPIO control using POST request
 #
-# Display user-defined byte on LED bar
+# Display a user-defined binary value on an LED bar
 
 
 import RPi.GPIO as gpio
@@ -27,7 +27,6 @@ def web_page(led_byte):
     p{font-size: 1.5rem;}
     .button{display: inline-block; background-color: #e7bd3b; border: none; border-radius: 4px; color: white;
                      padding: 16px 40px; text-decoration: none; font-size: 30px; margin: 2px; cursor: pointer;}
-    .button2{background-color: #4286f4;}
     </style>
     </head>
     <body>
@@ -44,7 +43,7 @@ def web_page(led_byte):
     """
     return bytes(html, 'utf-8')
 
-# Helper function to extract key,value pairs of POST data (useful
+# Helper function to extract key,value pairs of POST data
 def parsePOSTdata(data):
     data_dict = {}
     idx = data.find('\r\n\r\n')+4
@@ -58,29 +57,26 @@ def parsePOSTdata(data):
 
 
 def serve_web_page():
-    try:
-        while True:
-            print('Waiting for connection...')
-            conn, (client_ip, client_port) = s.accept()     # blocking call
-            print(f'Connection from {client_ip} on client port {client_port}')
-            client_message = conn.recv(2048).decode('utf-8')
-            print(f'Message from client:\n{client_message}')
-            data_dict = parsePOSTdata(client_message)
-            if 'led_byte' in data_dict.keys():   # make sure data was posted
-                led_byte = data_dict["led_byte"]
-            else:   # web page loading for 1st time so start with 0 for the LED byte
-                led_byte = '0'
-            conn.send(b'HTTP/1.1 200 OK\r\n')                  # status line
-            conn.send(b'Content-Type: text/html\r\n')          # headers
-            conn.send(b'Connection: close\r\n\r\n')   
-            conn.sendall(web_page(led_byte))                   # body
+    while True:
+        print('Waiting for connection...')
+        conn, (client_ip, client_port) = s.accept()     # blocking call
+        print(f'Connection from {client_ip} on client port {client_port}')
+        client_message = conn.recv(2048).decode('utf-8')
+        print(f'Message from client:\n{client_message}')
+        data_dict = parsePOSTdata(client_message)
+        if 'led_byte' in data_dict.keys():   # make sure data was posted
+            led_byte = data_dict["led_byte"]
+        else:   # web page loading for 1st time so start with 0 for the LED byte
+            led_byte = '0'
+        conn.send(b'HTTP/1.1 200 OK\r\n')                  # status line
+        conn.send(b'Content-Type: text/html\r\n')          # headers
+        conn.send(b'Connection: close\r\n\r\n')   
+        try:
+            conn.sendall(web_page())                       # body
+        finally:
             conn.close()
 
-            sh.shiftByte(int(led_byte))    # display byte on the LED bar
-
-    except Exception as e:
-        print(e)
-    conn.close()
+        sh.shiftByte(int(led_byte))    # display byte on the LED bar
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM) # pass IP addr & socket type
 s.bind(('', 80))     # bind to given port

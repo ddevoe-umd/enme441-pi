@@ -49,29 +49,26 @@ def web_page():
     return html.encode('utf-8')
 
 def serve_web_page():
-    try:
-        while True:
-            print('Waiting for connection...')
-            conn, addr = s.accept()      # blocking call -- code pauses until connection
-            print(f'Connection from {addr}')
-            data = conn.recv(1024).decode('utf-8')  # specify buffer size (max data to be received)
-            print('\nGET request recieved:\n--------------------')
-            print(data)
-            data = data[data.find('GET')+6 : data.find('HTTP')]  # slice the GET data
-            if len(data) > 0:   # check that GET message was sent
-                if "button_on" in data:
-                    GPIO.output(led, 1)
-                if "button_off" in data:
-                    GPIO.output(led, 0)
-            conn.send(b'HTTP/1.1 200 OK\n')             # status line
-            conn.send(b'Content-Type: text/html\n')     # headers
-            conn.send(b'Connection: close\r\n\r\n')
-            conn.sendall(web_page())                   # body
+    while True:
+        print('Waiting for connection...')
+        conn, addr = s.accept()      # blocking call -- code pauses until connection
+        print(f'Connection from {addr}')
+        data = conn.recv(1024).decode('utf-8')  # specify buffer size (max data to be received)
+        print('\nGET request recieved:\n--------------------')
+        print(data)
+        data = data[data.find('GET')+6 : data.find('HTTP')]  # slice the GET data
+        if len(data) > 0:   # check that GET message was sent
+            if "button_on" in data:
+                GPIO.output(led, 1)
+            if "button_off" in data:
+                GPIO.output(led, 0)
+        conn.send(b'HTTP/1.1 200 OK\n')             # status line
+        conn.send(b'Content-Type: text/html\n')     # headers
+        conn.send(b'Connection: close\r\n\r\n')
+        try:
+            conn.sendall(web_page())                    # body
+        finally:
             conn.close()
-    except Exception as e:
-        print(e)
-    conn.close()
-
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM) # TCP-IP socket
 s.bind(('', 80))
