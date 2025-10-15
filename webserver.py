@@ -12,6 +12,7 @@
 
 import socket
 import RPi.GPIO as GPIO
+import time
 
 GPIO.setmode(GPIO.BCM)
 
@@ -32,21 +33,26 @@ def web_page():
         </html>
         """
     print(html)
-    return (bytes(html,'utf-8'))   # convert html string to UTF-8 bytes object
+    return (bytes(html,'utf-8'))   # convert string to UTF-8 bytes object
      
 # Serve the web page to a client on connection:
 def serve_web_page():
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM) # TCP-IP socket
     s.bind(('', 80))
-    s.listen(3)  # up to 3 queued connections
+    s.listen(1)  # up to 3 queued connections
     while True:
+        time.sleep(0.1)
         print('Waiting for connection...')
         conn, (client_ip, client_port) = s.accept()     # blocking call
+        request = conn.recv(1024)                 # read request (required even if none)
         print(f'Connection from {client_ip}')   
-        conn.send(b'HTTP/1.1 200 OK\n')         # status line 
-        conn.send(b'Content-type: text/html\n') # header (content type)
-        conn.send(b'Connection: close\r\n\r\n') # header (tell client to close at end)
-        conn.sendall(web_page())                # body
-        conn.close()
+        conn.send(b'HTTP/1.1 200 OK\r\n')         # status line 
+        conn.send(b'Content-type: text/html\r\n') # header (content type)
+        conn.send(b'Connection: close\r\n\r\n')   # header (tell client to close)
+        # send body in try block in case connection is interrupted:
+        try:
+            conn.sendall(data)                    # body
+        finally:
+            conn.close()
 
 serve_web_page()

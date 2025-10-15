@@ -37,12 +37,16 @@ def serve_web_page():
         while True:
             print('Waiting for connection...')
             conn, (client_ip, client_port) = s.accept()     # blocking call
+            request = conn.recv(1024)               # read request (required even if none)
             print(f'Connection from {client_ip}')
             conn.send(b'HTTP/1.1 200 OK\n')         # status line
             conn.send(b'Content-type: text/html\n') # header (content type)
             conn.send(b'Connection: close\r\n\r\n') # header (tell client to close at end)
-            conn.sendall(web_page())                # body
-            conn.close()
+            # send body in try block in case connection is interrupted:
+            try:
+                conn.sendall(data)                  # body
+            finally:
+                conn.close()
     except:
         print('Closing socket')
         s.close()
