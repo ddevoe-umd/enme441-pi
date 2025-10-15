@@ -5,7 +5,10 @@
 # When contacted by a client (web browser), send a web page
 # displaying the states of selected GPIO pins.
 #
-# Must run as sudo to access port 80
+# Must run as sudo to access port 80.  
+#
+# Port 8080 is a non-privileged alternative to port 80 that can
+# be used to avoid the need for sudo, if desired.
 
 import socket
 import RPi.GPIO as GPIO
@@ -17,7 +20,7 @@ for p in pins: GPIO.setup(p, GPIO.IN)
 
 # Generate HTML for the web page:
 def web_page():
-    rows = [f'<tr><td>{str(p)}</td><td>{GPIO.input(p)}</td></tr>' for p in pins]
+    rows = [f'<tr><td>{p}</td><td>{GPIO.input(p)}</td></tr>' for p in pins]
     html = """
         <html>
         <head> <title>GPIO Pins</title> </head>
@@ -40,7 +43,7 @@ def serve_web_page():
         print('Waiting for connection...')
         conn, (client_ip, client_port) = s.accept()     # blocking call
         print(f'Connection from {client_ip}')   
-        conn.send(b'HTTP/1.0 200 OK\n')         # status line 
+        conn.send(b'HTTP/1.1 200 OK\n')         # status line 
         conn.send(b'Content-type: text/html\n') # header (content type)
         conn.send(b'Connection: close\r\n\r\n') # header (tell client to close at end)
         conn.sendall(web_page())                # body
