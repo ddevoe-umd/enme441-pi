@@ -95,21 +95,13 @@ if __name__ == '__main__':
 
     s = Shifter(data=16,latch=20,clock=21)   # set up Shifter
 
-    # Use multiprocessing.Lock() to prevent a single motor from trying to 
-    # execute multiple operations at the same time. Each motor uses
-    # a separate lock to allow different motors to run in parallel
-    # (note that parralel operation may require too much current
-    # if driving direclty from GPIO or shift register outputs,
-    # in which case use a single shared lock instead):
-    lock1 = multiprocessing.Lock()
-    lock2 = multiprocessing.Lock()
-
-    # Uncomment to use shared lock:
-    lock2 = lock1  
+    # Use multiprocessing.Lock() to prevent motors from trying to 
+    # execute multiple operations at the same time:
+    lock = multiprocessing.Lock()
 
     # Instantiate 2 Steppers:
-    m1 = Stepper(s, lock1)
-    m2 = Stepper(s, lock2)
+    m1 = Stepper(s, lock)
+    m2 = Stepper(s, lock)
 
     # Zero the motors:
     m1.zero()
